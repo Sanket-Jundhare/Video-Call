@@ -20,6 +20,7 @@ const el = {
   roomName: $("roomName"), timer: $("callTimer"),
   localVideo: $("localVideo"), remoteVideo: $("remoteVideo"), remoteWrap: $("remoteWrap"),
   remotePlaceholder: $("remotePlaceholder"), remotePlaceholderText: $("remotePlaceholderText"),
+  inviteLink: $("inviteLink"),
   pip: $("localVideoCard"), pipOff: $("pipOff"), videoSection: $("videoSection"),
   copyBtn: $("copyBtn"), devicesBtn: $("devicesBtn"), flipBtn: $("flipBtn"),
   fitBtn: $("fitBtn"), fullscreenBtn: $("fullscreenBtn"),
@@ -1040,15 +1041,27 @@ async function copyText(text) {
   }
 }
 
-el.copyBtn.addEventListener("click", async () => {
-  if (!state.roomId) return;
-  const link = `${location.origin}${location.pathname}?room=${encodeURIComponent(state.roomId)}`;
+function roomLink() {
+  if (!state.roomId) return "";
+  return `${location.origin}${location.pathname}?room=${encodeURIComponent(state.roomId)}`;
+}
+function showInviteLink() {
+  if (!el.inviteLink) return;
+  const link = roomLink();
+  el.inviteLink.hidden = !link;
+  el.inviteLink.textContent = link;
+}
+async function shareRoomLink() {
+  const link = roomLink();
+  if (!link) return;
   if (navigator.share && window.matchMedia("(pointer:coarse)").matches) {
     try { await navigator.share({ title: "Join my call", url: link }); return; }
     catch (e) { if (e.name === "AbortError") return; }
   }
   (await copyText(link)) ? toast("Invite link copied", "success") : toast("Could not copy link", "error");
-});
+}
+el.copyBtn.addEventListener("click", shareRoomLink);
+if (el.inviteLink) el.inviteLink.addEventListener("click", shareRoomLink);
 
 el.devicesBtn.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -1294,6 +1307,7 @@ function onRoomJoined(info) {
   el.roomName.textContent = info.host ? `${info.code} · host` : info.code;
   setWatermark(info.code);
   rememberRoom();
+  showInviteLink();
   const ids = new Set(Array.isArray(info.peers) ? info.peers : []);
   for (const id of [...state.peers.keys()]) if (!ids.has(id)) removePeer(id);
   ids.forEach((id) => ensurePeer(id, false));
@@ -1341,6 +1355,7 @@ function endCall(message) {
   resetChat();
   syncControlUI();
   setWatermark("");
+  showInviteLink();
   closeSharedAudio();
 
   el.deviceBar.classList.remove("open");

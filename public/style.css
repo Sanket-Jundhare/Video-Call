@@ -258,6 +258,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   overflow:hidden;background:#020607;
 }
 
+.invite-link{
+  display:block;max-width:min(520px,92vw);margin:10px auto 0;padding:8px 12px;
+  border:1px dashed rgba(255,255,255,.28);border-radius:10px;background:transparent;
+  color:inherit;font:inherit;font-size:12px;line-height:1.4;word-break:break-all;cursor:pointer;
+}
+.invite-link:hover{border-color:rgba(255,255,255,.55)}
 .remote-wrap{position:absolute;inset:0;overflow:hidden;cursor:pointer}
 .remote-grid{
   position:absolute;inset:0;z-index:1;
